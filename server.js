@@ -13,7 +13,8 @@ app.post('/api/generate-blessing', async (req, res) => {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${process.env.API_KEY}`
-            }
+            },
+            timeout: 120000 // 设置120秒超时
         });
         res.json(response.data);
     } catch (error) {
