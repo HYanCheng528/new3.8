@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三八妇女节祝福</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            animation: fadeIn 1s ease-in;
+        }
+
+        h1 {
+            color: #e91e63;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            margin: 1.5rem 0;
+        }
+
+        input {
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+            border: 2px solid #f48fb1;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 300px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #e91e63;
+            box-shadow: 0 0 8px rgba(233, 30, 99, 0.3);
+        }
+
+        button {
+            background: #e91e63;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background: #d81b60;
+            transform: translateY(-2px);
+        }
+
+        .blessing {
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background: #fce4ec;
+            display: none;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .flowers {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .flower {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ffcdd2;
+            border-radius: 50%;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="flowers"></div>
+    <div class="container">
+        <h1>三八妇女节祝福生成器</h1>
+        <div class="input-group">
+            <input type="text" id="motherName" placeholder="请输入您母亲的名字" />
+            <button onclick="generateBlessing()">生成祝福</button>
+        </div>
+        <div class="blessing-container">
+            <div id="blessingText" class="blessing"></div>
+            <button id="copyButton" onclick="copyBlessing()" style="display: none; margin-top: 1rem; background: #4CAF50;">复制祝福语</button>
+        </div>
+    </div>
+
+    <script>
+        // 创建漂浮的花朵效果
+        function createFlowers() {
+            const flowers = document.querySelector('.flowers');
+            for (let i = 0; i < 30; i++) {
+                const flower = document.createElement('div');
+                flower.className = 'flower';
+                flower.style.left = `${Math.random() * 100}%`;
+                flower.style.animationDelay = `${Math.random() * 20}s`;
+                flower.style.opacity = Math.random() * 0.6 + 0.4;
+                flower.style.transform = `scale(${Math.random() * 1.5 + 0.5})`;
+                flowers.appendChild(flower);
+            }
+        }
+
+        async function generateBlessing() {
+            const motherName = document.getElementById('motherName').value.trim();
+            if (!motherName) {
+                alert('请输入您母亲的名字');
+                return;
+            }
+
+            const blessingDiv = document.getElementById('blessingText');
+            blessingDiv.style.display = 'block';
+            blessingDiv.textContent = '正在生成祝福语...';
+
+            try {
+                const response = await fetch('/api/generate-blessing', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-r1-250120',
+                        messages: [
+                            {role: 'system', content: '你是一个温暖贴心的祝福语生成助手。'},
+                            {role: 'user', content: `请为我生成一段温馨感人的三八妇女节祝福语，祝福对象是我的母亲${motherName}。祝福语要体现出对母亲的爱与感激之情，要有创意和诗意，同时要体现出和母亲名字的关联。`}
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('网络请求失败');
+                }
+
+                const data = await response.json();
+                const blessing = data.choices[0].message.content;
+                blessingDiv.textContent = blessing;
+                document.getElementById('copyButton').style.display = 'inline-block';
+            } catch (error) {
+                const errorMessage = error.message === '网络请求失败' ? 
+                    '抱歉，服务器连接失败，请检查网络后重试。' : 
+                    '抱歉，生成祝福语时出现错误，请稍后再试。';
+                blessingDiv.textContent = errorMessage;
+                console.error('Error:', error);
+            }
+        }
+
+        async function copyBlessing() {
+            const blessing = document.getElementById('blessingText').textContent;
+            try {
+                await navigator.clipboard.writeText(blessing);
+                const copyButton = document.getElementById('copyButton');
+                const originalText = copyButton.textContent;
+                copyButton.textContent = '复制成功！';
+                copyButton.style.background = '#2E7D32';
+                setTimeout(() => {
+                    copyButton.textContent = originalText;
+                    copyButton.style.background = '#4CAF50';
+                }, 2000);
+            } catch (err) {
+                console.error('复制失败:', err);
+                alert('复制失败，请重试');
+            }
+        }
+
+        // 页面加载时创建花朵效果
+        createFlowers();
+    </script>
+</body>
+</html>
